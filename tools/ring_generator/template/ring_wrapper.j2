@@ -62,7 +62,7 @@ module {{ module }}
   ,input    [RSP_FLIT_WIDTH-1:0] {{ node.name }}_P0_TXRSPFLIT
   ,output   {{ node.name }}_P0_TXRSPLCRDV
 
-  {% if node.P0.value not in ['SNF'] %}
+  {% if node.P0.value not in ['SNF', 'NONE'] %}
   //RXRSP Channel
   ,output   {{ node.name }}_P0_RXRSPFLITPEND
   ,output   {{ node.name }}_P0_RXRSPFLITV
@@ -133,7 +133,7 @@ module {{ module }}
   ,input    [RSP_FLIT_WIDTH-1:0] {{ node.name }}_P1_TXRSPFLIT
   ,output   {{ node.name }}_P1_TXRSPLCRDV
 
-  {% if node.P1.value not in ['SNF'] %}
+  {% if node.P1.value not in ['SNF', 'NONE'] %}
   //RXRSP Channel
   ,output   {{ node.name }}_P1_RXRSPFLITPEND
   ,output   {{ node.name }}_P1_RXRSPFLITV
@@ -175,7 +175,7 @@ module {{ module }}
   
   // Generate signals
   {% for x_pos in range(0, xmax + 1) %}
-  {% for channel in ['req', 'dat', 'rsp', 'snp'] %}
+  {% for channel in ['req', 'dat', 'rsp'] %}
   {% if x_pos in range(0, xmax) %}
   wire m_{{ channel }}flitv_{{ x_pos }}_{{ x_pos + 1 }};
   wire [{{channel.upper()}}_FLIT_WIDTH-1:0] m_{{ channel }}flit_{{ x_pos }}_{{ x_pos + 1 }};
@@ -184,6 +184,7 @@ module {{ module }}
   wire m_{{ channel }}flitv_{{ x_pos + 1 }}_{{ x_pos }};
   wire [{{channel.upper()}}_FLIT_WIDTH-1:0] m_{{ channel }}flit_{{ x_pos + 1 }}_{{ x_pos }};
   wire m_{{ channel }}lcrdv_{{ x_pos + 1 }}_{{ x_pos }};
+
   {% else %}
   wire m_{{ channel }}flitv_{{ x_pos }}_0;
   wire [{{channel.upper()}}_FLIT_WIDTH-1:0] m_{{ channel }}flit_{{ x_pos }}_0;
@@ -191,6 +192,26 @@ module {{ module }}
 
   wire m_{{ channel }}flitv_0_{{ x_pos }};
   wire [{{channel.upper()}}_FLIT_WIDTH-1:0] m_{{ channel }}flit_0_{{ x_pos }};
+  wire m_{{ channel }}lcrdv_0_{{ x_pos }};
+  {% endif %}
+  {% endfor %}
+  {% for channel in ['snp'] %}
+  {% if x_pos in range(0, xmax) %}
+  wire m_{{ channel }}flitv_{{ x_pos }}_{{ x_pos + 1 }};
+  wire [{{channel.upper()}}_FLIT_WIDTH+7-1:0] m_{{ channel }}flit_{{ x_pos }}_{{ x_pos + 1 }};
+  wire m_{{ channel }}lcrdv_{{ x_pos }}_{{ x_pos + 1 }};
+
+  wire m_{{ channel }}flitv_{{ x_pos + 1 }}_{{ x_pos }};
+  wire [{{channel.upper()}}_FLIT_WIDTH+7-1:0] m_{{ channel }}flit_{{ x_pos + 1 }}_{{ x_pos }};
+  wire m_{{ channel }}lcrdv_{{ x_pos + 1 }}_{{ x_pos }};
+
+  {% else %}
+  wire m_{{ channel }}flitv_{{ x_pos }}_0;
+  wire [{{channel.upper()}}_FLIT_WIDTH+7-1:0] m_{{ channel }}flit_{{ x_pos }}_0;
+  wire m_{{ channel }}lcrdv_{{ x_pos }}_0;
+
+  wire m_{{ channel }}flitv_0_{{ x_pos }};
+  wire [{{channel.upper()}}_FLIT_WIDTH+7-1:0] m_{{ channel }}flit_0_{{ x_pos }};
   wire m_{{ channel }}lcrdv_0_{{ x_pos }};
   {% endif %}
   {% endfor %}
