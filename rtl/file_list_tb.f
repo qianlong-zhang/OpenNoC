@@ -15,8 +15,6 @@
 ./misc/poll_function.v
 ./misc/sync_fifo.v
 ./misc/rni_sel_bit_from_vec.v
-./misc/snf_find_entry.v
-./misc/snf_fifo.v
 ./src/hnf/hnf_link_txdat_wrap.v
 ./src/hnf/hnf_cache_pipeline.v
 ./src/hnf/hnf_tag_sram.v

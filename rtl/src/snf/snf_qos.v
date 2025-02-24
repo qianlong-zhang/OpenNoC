@@ -172,6 +172,8 @@ module snf_qos `SNF_PARAM
     wire                                             pcrdgrant_fifo_full;
     wire                                             pcrdgrant_fifo_push;
     wire                                             pcrdgrant_fifo_pop;
+    wire [`SNF_RET_BANK_ENTRIES_NUM-1:0]             h_retry_entry;
+    wire [`SNF_RET_BANK_ENTRIES_NUM-1:0]             l_retry_entry;
 
     //internal reg signals
     reg [`SNF_MSHR_ENTRIES_NUM-1:0]                  mshr_static_entry_valid_s1_q;
@@ -207,6 +209,8 @@ module snf_qos `SNF_PARAM
     reg [`SNF_MAX_WAIT_CNT_WIDTH-1:0]                l_wait_cnt_ns;
     reg [`CHIE_REQ_FLIT_SRCID_WIDTH-1:0]             h_pcrdgrant_srcid_sx1;
     reg [`CHIE_REQ_FLIT_SRCID_WIDTH-1:0]             l_pcrdgrant_srcid_sx1;
+    reg [`SNF_RET_BANK_ENTRIES_NUM-1:0]              h_retry_req_entry_q;
+    reg [`SNF_RET_BANK_ENTRIES_NUM-1:0]              l_retry_req_entry_q;
 
     //Rxreq decode
     assign rxreq_txnid_s0       = (rxreq_valid_s0 == 1'b1) ? rxreqflit_s0[`CHIE_REQ_FLIT_TXNID_RANGE]      : {`CHIE_REQ_FLIT_TXNID_WIDTH{1'b0}};
@@ -495,19 +499,22 @@ module snf_qos `SNF_PARAM
     assign retry_ack_fifo_push = rxreq_retry_enable_s0 & (~retry_ack_fifo_full | (retry_ack_fifo_full & txrsp_retryack_won_s1));
     assign retry_ack_fifo_pop  = txrsp_retryack_won_s1 & ~retry_ack_fifo_empty;
 
-    snf_fifo #(
-                    .FIFO_WIDTH (`SNF_RETRY_ACKQ_DATA_WIDTH),
-                    .FIFO_DEPTH (`SNF_RETRY_ACKQ_DATA_DEPTH)
-                )retry_ack_fifo(
-                    .clk        (clk                       ),
-                    .rst        (rst                       ),
-                    .wr_en      (retry_ack_fifo_push       ),
-                    .wr_data    (retry_ackq_datain_s0      ),
-                    .rd_en      (retry_ack_fifo_pop        ),
-                    .rd_data    (retry_ack_fifo_dataout_s1 ),
-                    .empty      (retry_ack_fifo_empty      ),
-                    .full       (retry_ack_fifo_full       )
-                );
+    sync_fifo #(
+                       .FIFO_WIDTH (`SNF_RETRY_ACKQ_DATA_WIDTH    ),
+                       .FIFO_DEPTH (`SNF_RETRY_ACKQ_DATA_DEPTH    ),
+                       .FIFO_BYP_ENABLE(1'b0)
+                   )retry_ack_fifo_nobyp(
+                       .clk        (clk                       ),
+                       .rst        (rst                       ),
+                       .push       (retry_ack_fifo_push       ),
+                       .data_in    (retry_ackq_datain_s0      ),
+                       .pop        (retry_ack_fifo_pop        ),
+                       .data_out   (retry_ack_fifo_dataout_s1 ),
+                       .empty      (retry_ack_fifo_empty      ),
+                       .full       (retry_ack_fifo_full       ),
+                       .count      (                          )
+                   );
+
 
     //retry_ack_fifo
     assign qos_txrsp_retryack_valid_s1    = ~retry_ack_fifo_empty;
@@ -707,13 +714,27 @@ module snf_qos `SNF_PARAM
     assign pcrdgnt_req_enable_s1 = h_present_win_sx1_q | l_present_win_sx1_q;
 
     //h pcrdgrant srcid logic
-    snf_find_entry #(.ENTRIES_NUM(SNF_MSHR_HNF_NUM_PARAM))
+    always @(posedge clk or posedge rst)begin: h_retry_entry_delay
+        if (rst)begin
+            h_retry_req_entry_q <= {`SNF_RET_BANK_ENTRIES_NUM{1'b0}};
+        end
+        else begin
+            h_retry_req_entry_q <= h_retry_req_entry;
+        end
+    end
+
+    assign h_retry_entry = h_retry_req_entry_q;
+
+    //h pcrdgrant srcid logic
+    poll_function #(.POLL_ENTRIES_NUM(SNF_MSHR_HNF_NUM_PARAM))
                     h_snf_find_entry(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
-                        .req_entry_vec     (h_retry_req_entry   ),
-                        .upd_start_entry   (h_present_win_sx  ),
-                        .req_entry_ptr_sel (ret_cnt_h_dec_ptr_sx1)
+                        .entry_vec         (h_retry_entry   ),
+                        .upd               (h_present_win_sx    ),
+                        .found             (),
+                        .sel_entry         (ret_cnt_h_dec_ptr_sx1),
+                        .sel_index         ()
                     );
 
     always @* begin: high_pcrdgrant_srcid_comb_logic
@@ -724,13 +745,27 @@ module snf_qos `SNF_PARAM
     end
 
     //l pcrdgrant srcid logic
-    snf_find_entry #(.ENTRIES_NUM(SNF_MSHR_HNF_NUM_PARAM))
+    always @(posedge clk or posedge rst)begin: l_retry_entry_delay
+        if (rst)begin
+            l_retry_req_entry_q <= {`SNF_RET_BANK_ENTRIES_NUM{1'b0}};
+        end
+        else begin
+            l_retry_req_entry_q <= l_retry_req_entry;
+        end
+    end
+
+    assign l_retry_entry = l_retry_req_entry_q;
+
+    //l pcrdgrant srcid logic
+    poll_function #(.POLL_ENTRIES_NUM(SNF_MSHR_HNF_NUM_PARAM))
                     l_snf_find_entry(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
-                        .req_entry_vec     (l_retry_req_entry   ),
-                        .upd_start_entry   (l_present_win_sx  ),
-                        .req_entry_ptr_sel (ret_cnt_l_dec_ptr_sx1)
+                        .entry_vec         (l_retry_entry       ),
+                        .upd               (l_present_win_sx    ),
+                        .found             (),
+                        .sel_entry         (ret_cnt_l_dec_ptr_sx1),
+                        .sel_index         ()
                     );
 
     always @* begin: low_pcrdgrant_srcid_comb_logic
@@ -763,18 +798,20 @@ module snf_qos `SNF_PARAM
     assign pcrdgrant_fifo_push = pcrdgnt_req_enable_s1 & (~pcrdgrant_fifo_full | (pcrdgrant_fifo_full & txrsp_pcrdgnt_won_s2));
     assign pcrdgrant_fifo_pop  = txrsp_pcrdgnt_won_s2 & ~pcrdgrant_fifo_empty;
 
-    snf_fifo #(
-                       .FIFO_WIDTH (`SNF_PCRDGRANTQ_DATA_WIDTH    ),
-                       .FIFO_DEPTH (`SNF_PCRDGRANTQ_DATA_DEPTH    )
+    sync_fifo #(
+                       .FIFO_ENTRIES_WIDTH (`SNF_PCRDGRANTQ_DATA_WIDTH    ),
+                       .FIFO_ENTRIES_DEPTH (`SNF_PCRDGRANTQ_DATA_DEPTH    ),
+                       .FIFO_BYP_ENABLE(1'b0)
                    )pcrdgrant_fifo_nobyp(
                        .clk        (clk                       ),
                        .rst        (rst                       ),
-                       .wr_en      (pcrdgrant_fifo_push       ),
-                       .wr_data    (pcrdgrant_fifo_datain_s1  ),
-                       .rd_en      (pcrdgrant_fifo_pop        ),
-                       .rd_data    (pcrdgrant_fifo_dataout_s2 ),
+                       .push       (pcrdgrant_fifo_push       ),
+                       .data_in    (pcrdgrant_fifo_datain_s1  ),
+                       .pop        (pcrdgrant_fifo_pop        ),
+                       .data_out   (pcrdgrant_fifo_dataout_s2 ),
                        .empty      (pcrdgrant_fifo_empty      ),
-                       .full       (pcrdgrant_fifo_full       )
+                       .full       (pcrdgrant_fifo_full       ),
+                       .count      (                          )
                    );
 
     //decode pcrdgrant part fields from fifo

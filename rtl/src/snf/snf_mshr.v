@@ -745,23 +745,16 @@ module snf_mshr `SNF_PARAM
         end
     endgenerate
 
-    snf_find_entry #(.ENTRIES_NUM(`SNF_MSHR_ENTRIES_NUM)) txrsp_entry_sel(
+    poll_function #(.POLL_ENTRIES_NUM(`SNF_MSHR_ENTRIES_NUM)) 
+                    txrsp_entry_sel(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
-                        .req_entry_vec     (txrsp_rdy_sx_q      ),
-                        .upd_start_entry   (txrsp_update_sx     ),
-                        .req_entry_ptr_sel (txrsp_valid_idx_sx  )
+                        .entry_vec         (txrsp_rdy_sx_q      ),
+                        .upd               (txrsp_update_sx     ),
+                        .found             (),
+                        .sel_entry         (txrsp_valid_idx_sx  ),
+                        .sel_index         (txrsp_entry_idx_sx  ) 
                     );
-
-    always @(*)begin : txrsp_entry_sel_logic
-    integer i;
-        txrsp_entry_idx_sx = {`SNF_MSHR_ENTRIES_WIDTH{1'b0}};
-        for (i = 0; i < `SNF_MSHR_ENTRIES_NUM; i = i + 1) begin
-            if (txrsp_valid_idx_sx[i])begin
-                    txrsp_entry_idx_sx = i;
-            end
-        end
-    end
 
     assign txrsp_update_sx              = (|txrsp_rdy_sx_q) & (~txrsp_valid_sx);
     assign txrsp_valid_sx               = (|txrsp_valid_idx_sx) & txrsp_rdy_sx_q[txrsp_entry_idx_sx];
@@ -942,26 +935,16 @@ module snf_mshr `SNF_PARAM
         end
     endgenerate
 
-    snf_find_entry #(.ENTRIES_NUM(`SNF_MSHR_ENTRIES_NUM)) txdat_entry_sel(
+    poll_function #(.POLL_ENTRIES_NUM(`SNF_MSHR_ENTRIES_NUM))
+                    txdat_entry_sel(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
-                        .req_entry_vec     (txdat_valid_sx      ),
-                        .upd_start_entry   (mshr_txdat_update   ),
-                        .req_entry_ptr_sel (mshr_txdat_idx_vec  )
+                        .entry_vec         (txdat_valid_sx      ),
+                        .upd               (mshr_txdat_update   ),
+                        .found             (sel_idx_valid       ),
+                        .sel_entry         (),
+                        .sel_index         (txdat_entry_idx_sx  ) 
                     );
-
-    always @(*)begin : txdat_entry_sel_logic
-    integer i;
-    txdat_entry_idx_sx = {`SNF_MSHR_ENTRIES_WIDTH{1'b0}};
-        for (i = 0; i < `SNF_MSHR_ENTRIES_NUM; i = i + 1) begin
-            if (mshr_txdat_idx_vec[i]) begin
-                txdat_entry_idx_sx = i;
-            end
-            else begin
-                txdat_entry_idx_sx = txdat_entry_idx_sx;
-            end
-        end
-    end
 
     always @(posedge clk or posedge rst)begin : mshr_txdat_timing_logic
         if(rst == 1'b1) begin
@@ -971,13 +954,13 @@ module snf_mshr `SNF_PARAM
         else if(mshr_txdat_won_sx && mshr_txdat_en_sx)begin
             txdat_en_sx_q           <= 1'b0;
         end
-        else if(txdat_valid_sx[txdat_entry_idx_sx])begin
+        else if(mshr_txdat_update && txdat_valid_sx[txdat_entry_idx_sx])begin
             txdat_en_sx_q           <= 1'b1;
             txdat_entry_idx_sx_q    <= txdat_entry_idx_sx;
         end
     end
 
-    assign mshr_txdat_update        = (~mshr_txdat_en_sx) & (|txdat_valid_sx) & (~txdat_valid_sx[txdat_entry_idx_sx]);
+    assign mshr_txdat_update        = (~mshr_txdat_en_sx) & (|txdat_valid_sx) & (~txdat_valid_sx[mshr_txdat_entry_idx_sx]);
     assign mshr_txdat_entry_idx_sx  = txdat_entry_idx_sx_q;
     assign mshr_txdat_en_sx         = txdat_en_sx_q;
     assign mshr_txdat_dataid_sx     = ((((rxreq_ccid_s1_q[txdat_entry_idx_sx_q][1] == 1'b0) && (txdat_rdy_sx_q[txdat_entry_idx_sx_q][0] == 1'b1) && (txdat_sent_sx_q[txdat_entry_idx_sx_q][0] == 1'b0))
