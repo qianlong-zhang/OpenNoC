@@ -725,8 +725,8 @@ module hni_qos `HNI_PARAM
 
     //h pcrdgrant srcid logic
     poll_function #(
-                        .POLL_ENTRIES_NUM(`HNI_MSHR_RNF_NUM_PARAM),
-                        .POLL_MODE       (1                     )
+                        .POLL_ENTRIES_NUM(`HNI_RET_BANK_ENTRIES_NUM),
+                        .POLL_MODE       (1                        )
     )h_sel_bit_from_vec(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
@@ -746,8 +746,8 @@ module hni_qos `HNI_PARAM
 
     //l pcrdgrant srcid logic
     poll_function #(
-                        .POLL_ENTRIES_NUM(`HNI_MSHR_RNF_NUM_PARAM),
-                        .POLL_MODE       (1                     )
+                        .POLL_ENTRIES_NUM(`HNI_RET_BANK_ENTRIES_NUM),
+                        .POLL_MODE       (1                        )
     )l_sel_bit_from_vec(
                         .clk               (clk                 ),
                         .rst               (rst                 ),
