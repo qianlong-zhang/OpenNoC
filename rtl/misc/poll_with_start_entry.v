@@ -14,7 +14,7 @@
 *    Guo Bing <guobing@bosc.ac.cn>
 */
 
-module hnf_sel_bit_from_vec
+module poll_with_start_entry
     #(
          parameter ENTRIES_NUM = -1
      )

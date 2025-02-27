@@ -7,14 +7,11 @@
 ./include/rni_param.v
 ./include/rni_defines.v
 ./tb/tb_hnf.sv
-./misc/hnf_fifo.v
-./misc/hnf_sel_bit_from_nxt.v
 ./misc/hnf_biq.v
-./misc/hnf_sel_bit_from_vec.v
 ./misc/assert_checker.sv
 ./misc/poll_function.v
 ./misc/sync_fifo.v
-./misc/rni_sel_bit_from_vec.v
+./misc/poll_with_start_entry.v
 ./src/hnf/hnf_link_txdat_wrap.v
 ./src/hnf/hnf_cache_pipeline.v
 ./src/hnf/hnf_tag_sram.v

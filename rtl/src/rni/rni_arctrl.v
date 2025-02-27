@@ -246,14 +246,14 @@ module rni_arctrl
                    ,.arlink_lock_s2_o              (                       )
                );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         arctrl_entry_alloc(
-            .in_vec(arctrl_entry_rdy_s1_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx({RNI_AR_ENTRIES_NUM_PARAM{1'b0}})
-            ,.ptr_dec(arctrl_alloc_ptr_s1_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_entry_rdy_s1_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry({RNI_AR_ENTRIES_NUM_PARAM{1'b0}})
+            ,.entry_ptr_sel(arctrl_alloc_ptr_s1_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found()
         );
 
@@ -558,47 +558,47 @@ module rni_arctrl
     //deassert select_vec when receiving retryack
     assign arctrl_entry_req_select_vec_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] = (arctrl_entry_req_select_vec_q[RNI_AR_ENTRIES_NUM_PARAM-1:0] | ({RNI_AR_ENTRIES_NUM_PARAM{arctrl_entry_req_select_success_flag_w}} & arctrl_entry_req_ptr_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])) & ~rxrsp_retryack_recv_vec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] & ~arctrl_entry_dealloc_vec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0];
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         req_retry_hi(
-            .in_vec(arctrl_entry_req_hi_retry_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(arctrl_entry_req_hi_retry_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_entry_req_hi_retry_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(arctrl_entry_req_hi_retry_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(arctrl_req_hi_retry_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         req_retry_lo(
-            .in_vec(arctrl_entry_req_lo_retry_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(arctrl_entry_req_lo_retry_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_entry_req_lo_retry_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(arctrl_entry_req_lo_retry_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(arctrl_req_lo_retry_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         req_new_hi(
-            .in_vec(arctrl_entry_req_hi_new_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(arctrl_entry_req_hi_new_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_entry_req_hi_new_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(arctrl_entry_req_hi_new_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(arctrl_req_hi_new_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         req_new_lo(
-            .in_vec(arctrl_entry_req_lo_new_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(arctrl_entry_req_lo_new_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_entry_req_lo_new_rdy_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(arctrl_entry_req_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(arctrl_entry_req_lo_new_dec_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(arctrl_req_lo_new_found_w)
         );
 
@@ -791,25 +791,25 @@ module rni_arctrl
     endgenerate
     //s2 selects entry, s3 knows whether it is successful, and s4 updates rxrsp_pcrdgrant_hi_upd_ptr_q/rxrsp_pcrdgrant_recv_vec_q,
     // it is necessary to consider the situation of two consecutive beats.
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         pcrdtype_hi_select(
-            .in_vec(rxrsp_pcrdgrant_hi_rdy_vec_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(rxrsp_pcrdtype_hi_select_w ? rxrsp_pcrdgrant_hi_upd_ptr_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_hi_upd_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(rxrsp_pcrdgrant_hi_recv_vec_d2_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(rxrsp_pcrdgrant_hi_rdy_vec_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(rxrsp_pcrdtype_hi_select_w ? rxrsp_pcrdgrant_hi_upd_ptr_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_hi_upd_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(rxrsp_pcrdgrant_hi_recv_vec_d2_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(rxrsp_pcrdtype_hi_match_d2_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         pcrdtype_lo_select(
-            .in_vec(rxrsp_pcrdgrant_lo_rdy_vec_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(rxrsp_pcrdtype_lo_select_w ? rxrsp_pcrdgrant_lo_upd_ptr_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_lo_upd_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(rxrsp_pcrdgrant_lo_recv_vec_d2_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(rxrsp_pcrdgrant_lo_rdy_vec_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(rxrsp_pcrdtype_lo_select_w ? rxrsp_pcrdgrant_lo_upd_ptr_ns_w[RNI_AR_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_lo_upd_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(rxrsp_pcrdgrant_lo_recv_vec_d2_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found(rxrsp_pcrdtype_lo_match_d2_w)
         );
 
@@ -924,25 +924,25 @@ module rni_arctrl
     assign arctrl_rb_idx_d4_o[`RNI_AR_ENTRIES_WIDTH-1:0] = arctrl_rdata_entry_idx_r[`RNI_AR_ENTRIES_WIDTH-1:0];
     assign arctrl_rb_bc_d4_o[`RNI_BC_WIDTH-1:0] = arctrl_rdata_bc_r[`RNI_BC_WIDTH-1:0];
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(`RNI_DMASK_CT_WIDTH)
+            .ENTRIES_NUM(`RNI_DMASK_CT_WIDTH)
         )
         arctrl_ctmask_ns(
-            .in_vec(arctrl_rdat_pdmask_r[`RNI_DMASK_PD_WIDTH-1:0] & (~arctrl_rdat_ctmask_r[`RNI_DMASK_CT_WIDTH-1:0]))
-            ,.startx({`RNI_DMASK_CT_WIDTH{1'b0}})
-            ,.ptr_dec(arctrl_rdat_ctmask_ns_w[`RNI_DMASK_CT_WIDTH-1:0])
+            .entry_vec(arctrl_rdat_pdmask_r[`RNI_DMASK_PD_WIDTH-1:0] & (~arctrl_rdat_ctmask_r[`RNI_DMASK_CT_WIDTH-1:0]))
+            ,.start_entry({`RNI_DMASK_CT_WIDTH{1'b0}})
+            ,.entry_ptr_sel(arctrl_rdat_ctmask_ns_w[`RNI_DMASK_CT_WIDTH-1:0])
             ,.found()
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AR_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AR_ENTRIES_NUM_PARAM)
         )
         arctrl_rdata_entry(
-            .in_vec(arctrl_rdata_rdy_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(arctrl_rdata_start_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(arctrl_rdata_select_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(arctrl_rdata_rdy_r[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(arctrl_rdata_start_ptr_q[RNI_AR_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(arctrl_rdata_select_w[RNI_AR_ENTRIES_NUM_PARAM-1:0])
             ,.found()
         );
 

@@ -1057,7 +1057,7 @@ module hnf_cache_pipeline `HNF_PARAM
     generate
         if(`LOC_WAY_NUM == 1) begin:loc_one_way
             //  LRU choose way
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  )
                                  u_lru_immediate_find (
@@ -1067,7 +1067,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_immediate_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_near_immediate_find (
                                      .entry_vec     (pipe_lru_near_immediate_rrpv_vec_sx3),
@@ -1076,7 +1076,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_near_immediate_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_long_find (
                                      .entry_vec     (pipe_lru_long_rrpv_vec_sx3),
@@ -1085,7 +1085,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_long_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_distance_find (
                                      .entry_vec     (pipe_lru_distance_rrpv_vec_sx3),
@@ -1096,7 +1096,7 @@ module hnf_cache_pipeline `HNF_PARAM
         end
         else begin:loc_more_than_one_way
             //  LRU choose way
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_immediate_find (
                                      .entry_vec     (pipe_lru_immediate_rrpv_vec_sx3),
@@ -1105,7 +1105,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_immediate_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_near_immediate_find (
                                      .entry_vec     (pipe_lru_near_immediate_rrpv_vec_sx3),
@@ -1114,7 +1114,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_near_immediate_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_long_find (
                                      .entry_vec     (pipe_lru_long_rrpv_vec_sx3),
@@ -1123,7 +1123,7 @@ module hnf_cache_pipeline `HNF_PARAM
                                      .found         (pipe_lru_long_found_sx3)
                                  );
 
-            hnf_sel_bit_from_vec #(
+            poll_with_start_entry #(
                                      .ENTRIES_NUM   (`LOC_WAY_NUM)
                                  ) u_lru_distance_find (
                                      .entry_vec     (pipe_lru_distance_rrpv_vec_sx3),
@@ -1504,7 +1504,7 @@ module hnf_cache_pipeline `HNF_PARAM
     assign pipe_sf_self_match_sx4        = |(pipe_sf_self_valid_vec_sx4_q[`SF_WAY_NUM-1:0] & pipe_sf_match_vec_sx4_q[`SF_WAY_NUM-1:0]);
     assign pipe_sf_self_match_share_sx4  = |(pipe_sf_self_share_vec_sx4_q[`SF_WAY_NUM-1:0] & pipe_sf_match_vec_sx4_q[`SF_WAY_NUM-1:0]);
 
-    hnf_sel_bit_from_vec #(
+    poll_with_start_entry #(
                              .ENTRIES_NUM(`SF_WAY_NUM)
                          ) u_sf_free_entry_find (
                              .entry_vec     (pipe_sf_free_vec_sx4_q[`SF_WAY_NUM-1:0]),

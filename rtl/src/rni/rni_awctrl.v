@@ -351,14 +351,14 @@ module rni_awctrl `RNI_PARAM
                );
 
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         awctrl_entry_alloc(
-            .in_vec(awctrl_entry_rdy_s1_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx({RNI_AW_ENTRIES_NUM_PARAM{1'b0}})
-            ,.ptr_dec(awctrl_alloc_ptr_s1_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(awctrl_entry_rdy_s1_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry({RNI_AW_ENTRIES_NUM_PARAM{1'b0}})
+            ,.entry_ptr_sel(awctrl_alloc_ptr_s1_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found()
         );
 
@@ -779,47 +779,47 @@ module rni_awctrl `RNI_PARAM
     //deassert select_vec when receiving retryack
     assign awctrl_entry_req_select_vec_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] = (awctrl_entry_req_select_vec_q[RNI_AW_ENTRIES_NUM_PARAM-1:0] | ({RNI_AW_ENTRIES_NUM_PARAM{awctrl_entry_req_select_success_flag_w}} & awctrl_entry_req_ptr_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])) & ~rxrsp_retryack_recv_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] & ~awctrl_entry_dealloc_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0];
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         req_retry_hi(
-            .in_vec(awctrl_entry_req_hi_retry_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(awctrl_entry_req_hi_retry_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(awctrl_entry_req_hi_retry_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(awctrl_entry_req_hi_retry_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(awctrl_req_hi_retry_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         req_retry_lo(
-            .in_vec(awctrl_entry_req_lo_retry_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(awctrl_entry_req_lo_retry_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(awctrl_entry_req_lo_retry_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(awctrl_entry_req_lo_retry_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(awctrl_req_lo_retry_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         req_new_hi(
-            .in_vec(awctrl_entry_req_hi_new_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(awctrl_entry_req_hi_new_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(awctrl_entry_req_hi_new_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(awctrl_entry_req_hi_new_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(awctrl_req_hi_new_found_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         req_new_lo(
-            .in_vec(awctrl_entry_req_lo_new_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(awctrl_entry_req_lo_new_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(awctrl_entry_req_lo_new_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(awctrl_entry_req_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(awctrl_entry_req_lo_new_dec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(awctrl_req_lo_new_found_w)
         );
 
@@ -1020,25 +1020,25 @@ module rni_awctrl `RNI_PARAM
     endgenerate
     //s2 selects entry, s3 knows whether it is successful, and s4 updates rxrsp_pcrdgrant_hi_upd_ptr_q/rxrsp_pcrdgrant_recv_vec_q,
     // it is necessary to consider the situation of two consecutive beats.
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         pcrdtype_hi_select(
-            .in_vec(rxrsp_pcrdgrant_hi_rdy_vec_r[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(rxrsp_pcrdtype_hi_select_w ? rxrsp_pcrdgrant_hi_upd_ptr_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_hi_upd_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(rxrsp_pcrdgrant_hi_recv_vec_d2_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(rxrsp_pcrdgrant_hi_rdy_vec_r[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(rxrsp_pcrdtype_hi_select_w ? rxrsp_pcrdgrant_hi_upd_ptr_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_hi_upd_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(rxrsp_pcrdgrant_hi_recv_vec_d2_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(rxrsp_pcrdtype_hi_match_d2_w)
         );
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         pcrdtype_lo_select(
-            .in_vec(rxrsp_pcrdgrant_lo_rdy_vec_r[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(rxrsp_pcrdtype_lo_select_w ? rxrsp_pcrdgrant_lo_upd_ptr_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_lo_upd_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(rxrsp_pcrdgrant_lo_recv_vec_d2_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(rxrsp_pcrdgrant_lo_rdy_vec_r[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(rxrsp_pcrdtype_lo_select_w ? rxrsp_pcrdgrant_lo_upd_ptr_ns_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] : rxrsp_pcrdgrant_lo_upd_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(rxrsp_pcrdgrant_lo_recv_vec_d2_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(rxrsp_pcrdtype_lo_match_d2_w)
         );
 
@@ -1209,14 +1209,14 @@ module rni_awctrl `RNI_PARAM
     assign awctrl_txdat_rdy_entry_d2_o[RNI_AW_ENTRIES_NUM_PARAM-1:0] = txdat_rdy_entry_d2_q[RNI_AW_ENTRIES_NUM_PARAM-1:0];
     assign awctrl_txdat_ctmask_d2_o[`RNI_DMASK_CT_WIDTH-1:0] = txdat_ctmask_d2_q[`RNI_DMASK_CT_WIDTH-1:0];
     //If an entry needs to send two packets, entry_vec and upd are the same as the last selection.
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         txdat_select(
-            .in_vec(txdat_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(txdat_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(txdat_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(txdat_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(txdat_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(txdat_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(txdat_select_success_w)
         );
 
@@ -1383,14 +1383,14 @@ module rni_awctrl `RNI_PARAM
     assign awctrl_compack_chain_clean_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] = ({RNI_AW_ENTRIES_NUM_PARAM{awctrl_txrspflitv_d0_o & awctrl_txrspflit_sent_d0_i}} & txrsp_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0]) |
            (rxrsp_comp_recv_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0] & ~awctrl_entry_expcompack_q[RNI_AW_ENTRIES_NUM_PARAM-1:0]);
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         txrsp_select(
-            .in_vec(txrsp_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(txrsp_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(txrsp_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(txrsp_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(txrsp_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(txrsp_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(txrsp_select_success_w)
         );
 
@@ -1493,14 +1493,14 @@ module rni_awctrl `RNI_PARAM
     assign awctrl_brsp_resperr_d2_o[`CHIE_RSP_FLIT_RESPERR_WIDTH-1:0] = {`CHIE_RSP_FLIT_RESPERR_WIDTH{1'b0}};
     assign bresp_credit_avail_w = !bresp_credit_full_w;
 
-    rni_sel_bit_from_vec
+    poll_with_start_entry
         #(
-            .VEC_WIDTH(RNI_AW_ENTRIES_NUM_PARAM)
+            .ENTRIES_NUM(RNI_AW_ENTRIES_NUM_PARAM)
         )
         bresp_select(
-            .in_vec(bresp_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.startx(bresp_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
-            ,.ptr_dec(bresp_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            .entry_vec(bresp_select_rdy_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.start_entry(bresp_select_ptr_q[RNI_AW_ENTRIES_NUM_PARAM-1:0])
+            ,.entry_ptr_sel(bresp_select_vec_w[RNI_AW_ENTRIES_NUM_PARAM-1:0])
             ,.found(bresp_select_success_w)
         );
 

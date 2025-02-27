@@ -1350,7 +1350,7 @@ module hnf_mshr_ctl `HNF_PARAM
         end
     endgenerate
 
-    hnf_sel_bit_from_vec #(
+    poll_with_start_entry #(
                              .ENTRIES_NUM ( `MSHR_ENTRIES_NUM )
                          )
                          retry_entry_find (

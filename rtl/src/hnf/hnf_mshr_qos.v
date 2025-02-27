@@ -758,19 +758,20 @@ module hnf_mshr_qos `HNF_PARAM
     assign retry_ack_fifo_push = rxreq_retry_enable_s0 & (~retry_ack_fifo_full | (retry_ack_fifo_full & txrsp_mshr_retryack_won_s1));
     assign retry_ack_fifo_pop  = txrsp_mshr_retryack_won_s1 & ~retry_ack_fifo_empty;
 
-    hnf_fifo #(
+    sync_fifo #(
                  .FIFO_ENTRIES_WIDTH (`RETRY_ACKQ_DATA_WIDTH    ),
-                 .FIFO_ENTRIES_DEPTH (`RETRY_ACKQ_DATA_DEPTH    )
+                 .FIFO_ENTRIES_DEPTH (`RETRY_ACKQ_DATA_DEPTH    ),
+                 .FIFO_BYP_ENABLE    ( 1'b0                     )
              )retry_ack_fifo(
                  .clk       (clk                       ),
                  .rst       (rst                       ),
-                 .wr_en     (retry_ack_fifo_push       ),
-                 .wr_data   (retry_ackq_datain_s0      ),
-                 .rd_en     (retry_ack_fifo_pop        ),
-                 .rd_data   (retry_ack_fifo_dataout_s1 ),
+                 .push      (retry_ack_fifo_push       ),
+                 .data_in   (retry_ackq_datain_s0      ),
+                 .pop       (retry_ack_fifo_pop        ),
+                 .data_out  (retry_ack_fifo_dataout_s1 ),
                  .empty     (retry_ack_fifo_empty      ),
                  .full      (retry_ack_fifo_full       ),
-                 .fifo_cnt  (                          )
+                 .count     (                          )
              );
 
     //retry_ack_fifo flit disassamble
@@ -1182,14 +1183,18 @@ module hnf_mshr_qos `HNF_PARAM
     end
 
     //hh pcrdgrant srcid logic
-    hnf_sel_bit_from_nxt `HNF_PARAM_INST
-                         hh_hnf_sel_bit_from_nxt(
-                             .clk               (clk                  ),
-                             .rst               (rst                  ),
-                             .req_entry_vec     (hh_req_entry_s1      ),
-                             .upd_start_entry   (hh_present_win_s1    ),
-                             .req_entry_ptr_sel (ret_cnt_hh_dec_ptr_s1)
-                         );
+    poll_function #(
+                      .POLL_ENTRIES_NUM (`RET_BANK_ENTRIES_NUM),
+                      .POLL_MODE        ( 1                   )
+                  )hh_hnf_sel_bit_from_nxt(
+                      .clk              (clk                  ),
+                      .rst              (rst                  ),
+                      .entry_vec        (hh_req_entry_s1      ),
+                      .upd              (hh_present_win_s1    ),
+                      .found            (                     ),
+                      .sel_entry        (ret_cnt_hh_dec_ptr_s1),
+                      .sel_index        (                     )
+                  );
 
     always @(posedge clk or posedge rst) begin: update_hhigh_cnt_dec_ptr_timing_logic
         if (rst == 1'b1)
@@ -1215,14 +1220,18 @@ module hnf_mshr_qos `HNF_PARAM
     end
 
     //h pcrdgrant srcid logic
-    hnf_sel_bit_from_nxt `HNF_PARAM_INST
-                         h_hnf_sel_bit_from_nxt(
-                             .clk               (clk                 ),
-                             .rst               (rst                 ),
-                             .req_entry_vec     (h_req_entry_s1      ),
-                             .upd_start_entry   (h_present_win_s1    ),
-                             .req_entry_ptr_sel (ret_cnt_h_dec_ptr_s1)
-                         );
+    poll_function #(
+                      .POLL_ENTRIES_NUM (`RET_BANK_ENTRIES_NUM),
+                      .POLL_MODE        ( 1                   )
+                  )h_poll_function(
+                      .clk              (clk                  ),
+                      .rst              (rst                  ),
+                      .entry_vec        (h_req_entry_s1       ),
+                      .upd              (h_present_win_s1     ),
+                      .found            (                     ),
+                      .sel_entry        (ret_cnt_h_dec_ptr_s1 ),
+                      .sel_index        (                     )
+                  );
 
     always @(posedge clk or posedge rst) begin: update_high_cnt_dec_ptr_timing_logic
         if (rst == 1'b1)
@@ -1248,14 +1257,18 @@ module hnf_mshr_qos `HNF_PARAM
     end
 
     //m pcrdgrant srcid logic
-    hnf_sel_bit_from_nxt `HNF_PARAM_INST
-                         m_hnf_sel_bit_from_nxt(
-                             .clk               (clk                 ),
-                             .rst               (rst                 ),
-                             .req_entry_vec     (m_req_entry_s1      ),
-                             .upd_start_entry   (m_present_win_s1    ),
-                             .req_entry_ptr_sel (ret_cnt_m_dec_ptr_s1)
-                         );
+    poll_function #(
+                      .POLL_ENTRIES_NUM (`RET_BANK_ENTRIES_NUM),
+                      .POLL_MODE        ( 1                   )
+                  )m_poll_function(
+                      .clk              (clk                  ),
+                      .rst              (rst                  ),
+                      .entry_vec        (m_req_entry_s1       ),
+                      .upd              (m_present_win_s1     ),
+                      .found            (                     ),
+                      .sel_entry        (ret_cnt_m_dec_ptr_s1 ),
+                      .sel_index        (                     )
+                  );
 
     always @(posedge clk or posedge rst) begin: update_med_cnt_dec_ptr_timing_logic
         if (rst == 1'b1)
@@ -1281,14 +1294,18 @@ module hnf_mshr_qos `HNF_PARAM
     end
 
     //l pcrdgrant srcid logic
-    hnf_sel_bit_from_nxt `HNF_PARAM_INST
-                         l_hnf_sel_bit_from_nxt(
-                             .clk               (clk                 ),
-                             .rst               (rst                 ),
-                             .req_entry_vec     (l_req_entry_s1      ),
-                             .upd_start_entry   (l_present_win_s1    ),
-                             .req_entry_ptr_sel (ret_cnt_l_dec_ptr_s1)
-                         );
+    poll_function #(
+                      .POLL_ENTRIES_NUM (`RET_BANK_ENTRIES_NUM),
+                      .POLL_MODE        ( 1                   )
+                  )l_poll_function(
+                      .clk              (clk                  ),
+                      .rst              (rst                  ),
+                      .entry_vec        (l_req_entry_s1       ),
+                      .upd              (l_present_win_s1     ),
+                      .found            (                     ),
+                      .sel_entry        (ret_cnt_l_dec_ptr_s1 ),
+                      .sel_index        (                     )
+                  );
 
     always @(posedge clk or posedge rst) begin: update_low_cnt_dec_ptr_timing_logic
         if (rst == 1'b1)
@@ -1340,19 +1357,20 @@ module hnf_mshr_qos `HNF_PARAM
     assign pcrdgrant_fifo_push = pcrdgnt_req_enable_s2_q & (~pcrdgrant_fifo_full | (pcrdgrant_fifo_full & txrsp_mshr_pcrdgnt_won_s2));
     assign pcrdgrant_fifo_pop  = txrsp_mshr_pcrdgnt_won_s2 & ~pcrdgrant_fifo_empty;
 
-    hnf_fifo #(
+    sync_fifo #(
                  .FIFO_ENTRIES_WIDTH (`PCRDGRANTQ_DATA_WIDTH ),
-                 .FIFO_ENTRIES_DEPTH (`PCRDGRANTQ_DATA_DEPTH )
+                 .FIFO_ENTRIES_DEPTH (`PCRDGRANTQ_DATA_DEPTH ),
+                 .FIFO_BYP_ENABLE    ( 1'b0                  )
              )pcrdgrant_fifo(
                  .clk       (clk                       ),
                  .rst       (rst                       ),
-                 .wr_en     (pcrdgrant_fifo_push       ),
-                 .wr_data   (pcrdgrant_fifo_datain_s2  ),
-                 .rd_en     (pcrdgrant_fifo_pop        ),
-                 .rd_data   (pcrdgrant_fifo_dataout_s2 ),
+                 .push      (pcrdgrant_fifo_push       ),
+                 .data_in   (pcrdgrant_fifo_datain_s2  ),
+                 .pop       (pcrdgrant_fifo_pop        ),
+                 .data_out  (pcrdgrant_fifo_dataout_s2 ),
                  .empty     (pcrdgrant_fifo_empty      ),
                  .full      (pcrdgrant_fifo_full       ),
-                 .fifo_cnt  (                          )
+                 .count     (                          )
              );
 
     //decode pcrdgrant part fields from fifo
