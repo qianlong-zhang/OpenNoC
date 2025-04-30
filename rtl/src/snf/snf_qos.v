@@ -500,8 +500,8 @@ module snf_qos `SNF_PARAM
     assign retry_ack_fifo_pop  = txrsp_retryack_won_s1 & ~retry_ack_fifo_empty;
 
     sync_fifo #(
-                       .FIFO_WIDTH (`SNF_RETRY_ACKQ_DATA_WIDTH    ),
-                       .FIFO_DEPTH (`SNF_RETRY_ACKQ_DATA_DEPTH    ),
+                       .FIFO_ENTRIES_WIDTH (`SNF_RETRY_ACKQ_DATA_WIDTH    ),
+                       .FIFO_ENTRIES_DEPTH (`SNF_RETRY_ACKQ_DATA_DEPTH    ),
                        .FIFO_BYP_ENABLE(1'b0)
                    )retry_ack_fifo_nobyp(
                        .clk        (clk                       ),
@@ -514,7 +514,6 @@ module snf_qos `SNF_PARAM
                        .full       (retry_ack_fifo_full       ),
                        .count      (                          )
                    );
-
 
     //retry_ack_fifo
     assign qos_txrsp_retryack_valid_s1    = ~retry_ack_fifo_empty;

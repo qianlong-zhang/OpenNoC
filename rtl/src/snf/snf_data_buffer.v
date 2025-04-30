@@ -390,6 +390,19 @@ module snf_data_buffer `SNF_PARAM
                 txdat_flit[`CHIE_DAT_FLIT_RSVDC_RANGE] = {`CHIE_DAT_FLIT_RSVDC_WIDTH{1'b0}};
             end
         end
+
+        if(CHIE_DATACHECK_WIDTH_PARAM != 0)begin
+            always @*begin
+                txdat_flit[`CHIE_DAT_FLIT_DATACHECK_RANGE] = {`CHIE_DAT_FLIT_DATACHECK_WIDTH{1'b0}};
+            end
+        end
+
+        if(CHIE_POISON_WIDTH_PARAM != 0)begin
+            always @*begin
+                txdat_flit[`CHIE_DAT_FLIT_POISON_RANGE] = {`CHIE_DAT_FLIT_POISON_WIDTH{1'b0}};
+            end
+        end
+
     endgenerate
 
     always@(*)begin:txdat_package_comb_logic
@@ -412,8 +425,6 @@ module snf_data_buffer `SNF_PARAM
         txdat_flit[`CHIE_DAT_FLIT_TRACETAG_RANGE]  = mshr_txdat_tracetag_sx;
         txdat_flit[`CHIE_DAT_FLIT_BE_RANGE]        = dbf_txdat_be_sx;
         txdat_flit[`CHIE_DAT_FLIT_DATA_RANGE]      = dbf_txdat_data_sx;
-        txdat_flit[`CHIE_DAT_FLIT_DATACHECK_RANGE] = {`CHIE_DAT_FLIT_DATACHECK_WIDTH{1'b0}};
-        txdat_flit[`CHIE_DAT_FLIT_POISON_RANGE]    = {`CHIE_DAT_FLIT_POISON_WIDTH{1'b0}};
     end
 
     //************************************************************************//

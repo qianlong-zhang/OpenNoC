@@ -6,6 +6,8 @@
 ./include/hni_defines.v
 ./include/rni_param.v
 ./include/rni_defines.v
+./include/snf_param.v
+./include/snf_defines.v
 ./tb/tb_hnf.sv
 ./misc/hnf_biq.v
 ./misc/assert_checker.sv

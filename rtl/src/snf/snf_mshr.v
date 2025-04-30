@@ -284,6 +284,7 @@ module snf_mshr `SNF_PARAM
     wire                                                mshr_txdat_update;
     wire [`SNF_MSHR_ENTRIES_NUM-1:0]                    mshr_txdat_idx_vec;
     wire [`SNF_MSHR_ENTRIES_NUM-1:0]                    hazard_sx;
+    wire                                                sel_idx_valid;
 
     genvar entry;
 
@@ -934,7 +935,7 @@ module snf_mshr `SNF_PARAM
             assign txdat_valid_sx[entry]  = (txdat_sent_sx_q[entry] != txdat_rdy_sx_q[entry]);
         end
     endgenerate
-
+    
     poll_function #(.POLL_ENTRIES_NUM(`SNF_MSHR_ENTRIES_NUM))
                     txdat_entry_sel(
                         .clk               (clk                 ),
@@ -946,37 +947,23 @@ module snf_mshr `SNF_PARAM
                         .sel_index         (txdat_entry_idx_sx  ) 
                     );
 
-    always @(posedge clk or posedge rst)begin : mshr_txdat_timing_logic
-        if(rst == 1'b1) begin
-            txdat_en_sx_q           <= 1'b0;
-            txdat_entry_idx_sx_q    <= {`SNF_MSHR_ENTRIES_WIDTH{1'b0}};
-        end
-        else if(mshr_txdat_won_sx && mshr_txdat_en_sx)begin
-            txdat_en_sx_q           <= 1'b0;
-        end
-        else if(mshr_txdat_update && txdat_valid_sx[txdat_entry_idx_sx])begin
-            txdat_en_sx_q           <= 1'b1;
-            txdat_entry_idx_sx_q    <= txdat_entry_idx_sx;
-        end
-    end
-
-    assign mshr_txdat_update        = (~mshr_txdat_en_sx) & (|txdat_valid_sx) & (~txdat_valid_sx[mshr_txdat_entry_idx_sx]);
-    assign mshr_txdat_entry_idx_sx  = txdat_entry_idx_sx_q;
-    assign mshr_txdat_en_sx         = txdat_en_sx_q;
-    assign mshr_txdat_dataid_sx     = ((((rxreq_ccid_s1_q[txdat_entry_idx_sx_q][1] == 1'b0) && (txdat_rdy_sx_q[txdat_entry_idx_sx_q][0] == 1'b1) && (txdat_sent_sx_q[txdat_entry_idx_sx_q][0] == 1'b0))
-                                        | ((rxreq_ccid_s1_q[txdat_entry_idx_sx_q][1] == 1'b1) && (txdat_rdy_sx_q[txdat_entry_idx_sx_q][1] == 1'b1) && (txdat_sent_sx_q[txdat_entry_idx_sx_q][1] == 2'b01))) ? 2'b00 //ccid[1]=0,packet1;ccid[1]=1,packet2
-                                    : (((rxreq_ccid_s1_q[txdat_entry_idx_sx_q][1] == 1'b0) && (txdat_rdy_sx_q[txdat_entry_idx_sx_q][1] == 1'b1) && (txdat_sent_sx_q[txdat_entry_idx_sx_q] == 2'b01))
-                                        | ((rxreq_ccid_s1_q[txdat_entry_idx_sx_q][1] == 1'b1) && (txdat_rdy_sx_q[txdat_entry_idx_sx_q][0] == 1'b1) && (txdat_sent_sx_q[txdat_entry_idx_sx_q][0] == 1'b0)) ? 2'b10 // ccid[1]=0,packet2;ccid[1]=1,packet1
+    assign mshr_txdat_update        = (~mshr_txdat_en_sx) & (~txdat_valid_sx[txdat_entry_idx_sx]);
+    assign mshr_txdat_entry_idx_sx  = txdat_entry_idx_sx;
+    assign mshr_txdat_en_sx         = sel_idx_valid;
+    assign mshr_txdat_dataid_sx     = ((((rxreq_ccid_s1_q[mshr_txdat_entry_idx_sx][1] == 1'b0) && (txdat_rdy_sx_q[mshr_txdat_entry_idx_sx][0] == 1'b1) && (txdat_sent_sx_q[mshr_txdat_entry_idx_sx][0] == 1'b0))
+                                        | ((rxreq_ccid_s1_q[mshr_txdat_entry_idx_sx][1] == 1'b1) && (txdat_rdy_sx_q[mshr_txdat_entry_idx_sx][1] == 1'b1) && (txdat_sent_sx_q[mshr_txdat_entry_idx_sx][1] == 2'b01))) ? 2'b00 //ccid[1]=0,packet1;ccid[1]=1,packet2
+                                    : (((rxreq_ccid_s1_q[mshr_txdat_entry_idx_sx][1] == 1'b0) && (txdat_rdy_sx_q[mshr_txdat_entry_idx_sx][1] == 1'b1) && (txdat_sent_sx_q[mshr_txdat_entry_idx_sx] == 2'b01))
+                                        | ((rxreq_ccid_s1_q[mshr_txdat_entry_idx_sx][1] == 1'b1) && (txdat_rdy_sx_q[mshr_txdat_entry_idx_sx][0] == 1'b1) && (txdat_sent_sx_q[mshr_txdat_entry_idx_sx][0] == 1'b0)) ? 2'b10 // ccid[1]=0,packet2;ccid[1]=1,packet1
                                             : 2'b00));
-    assign mshr_txdat_txnid_sx      = (rxreq_dodmt_s1_q[txdat_entry_idx_sx_q] == 1'b1) ? rxreq_returntxnid_s1_q[txdat_entry_idx_sx_q] : rxreq_txnid_s1_q[txdat_entry_idx_sx_q];
+    assign mshr_txdat_txnid_sx      = (rxreq_dodmt_s1_q[mshr_txdat_entry_idx_sx] == 1'b1) ? rxreq_returntxnid_s1_q[mshr_txdat_entry_idx_sx] : rxreq_txnid_s1_q[mshr_txdat_entry_idx_sx];
     assign mshr_txdat_opcode_sx     = `CHIE_COMPDATA;
     assign mshr_txdat_resp_sx       = `CHIE_COMP_RESP_UC;
     assign mshr_txdat_resperr_sx    = 2'b00;
-    assign mshr_txdat_dbid_sx       = rxreq_txnid_s1_q[txdat_entry_idx_sx_q];
-    assign mshr_txdat_tgtid_sx      = (rxreq_dodmt_s1_q[txdat_entry_idx_sx_q] == 1'b1) ? rxreq_returnnid_s1_q[txdat_entry_idx_sx_q] : rxreq_srcid_s1_q[txdat_entry_idx_sx_q];
-    assign mshr_txdat_srcid_sx      = rxreq_tgtid_s1_q[txdat_entry_idx_sx_q];
-    assign mshr_txdat_homenid_sx    = rxreq_srcid_s1_q[txdat_entry_idx_sx_q];
-    assign mshr_txdat_tracetag_sx   = rxreq_tracetag_s1_q[txdat_entry_idx_sx_q];
+    assign mshr_txdat_dbid_sx       = rxreq_txnid_s1_q[mshr_txdat_entry_idx_sx];
+    assign mshr_txdat_tgtid_sx      = (rxreq_dodmt_s1_q[mshr_txdat_entry_idx_sx] == 1'b1) ? rxreq_returnnid_s1_q[mshr_txdat_entry_idx_sx] : rxreq_srcid_s1_q[mshr_txdat_entry_idx_sx];
+    assign mshr_txdat_srcid_sx      = rxreq_tgtid_s1_q[mshr_txdat_entry_idx_sx];
+    assign mshr_txdat_homenid_sx    = rxreq_srcid_s1_q[mshr_txdat_entry_idx_sx];
+    assign mshr_txdat_tracetag_sx   = rxreq_tracetag_s1_q[mshr_txdat_entry_idx_sx];
 
     //************************************************************************//
     //                       mshr AW channel logic                            //
@@ -1132,7 +1119,7 @@ module snf_mshr `SNF_PARAM
             always @(posedge clk or posedge rst)begin : rxdat_cancel_s1_q_timing_logic
                 if(rst == 1'b1)
                     rxdat_cancel_s1_q[entry]          <= 1'b0;
-                else if(dbf_mshr_rxdat_cancel_sx && (entry == dbf_mshr_rxdat_cancel_idx_sx))
+                else if(dbf_mshr_rxdat_ok_sx && dbf_mshr_rxdat_cancel_sx && (entry == dbf_mshr_rxdat_ok_idx_sx))
                     rxdat_cancel_s1_q[entry]          <= 1'b1;
                 else if(mshr_retired_valid_sx && (entry == mshr_retired_idx_sx))
                     rxdat_cancel_s1_q[entry]          <= 1'b0;

@@ -36,7 +36,7 @@
 `define SNF_CHIE_SIZE64B                   3'h6
 
 `define SNF_MSHR_ENTRIES_NUM               SNF_MSHR_ENTRIES_NUM_PARAM
-`define SNF_MSHR_ENTRIES_WIDTH             (SNF_MSHR_ENTRIES_NUM_PARAM > 1) ? $clog2(SNF_MSHR_ENTRIES_NUM_PARAM) : 1'b1
+`define SNF_MSHR_ENTRIES_WIDTH             ((SNF_MSHR_ENTRIES_NUM_PARAM > 1) ? $clog2(SNF_MSHR_ENTRIES_NUM_PARAM) : 1'b1)
 
 /////////////////////////////////////////////////////////////////////////
 // MASK
@@ -82,7 +82,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 // snf_mshr_qos
-`define SNF_QOS_CNT_WIDTH                      (SNF_MSHR_ENTRIES_NUM_PARAM > 1) ? $clog2(SNF_MSHR_ENTRIES_NUM_PARAM) : 1'b1
+`define SNF_QOS_CNT_WIDTH                      ((SNF_MSHR_ENTRIES_NUM_PARAM > 1) ? $clog2(SNF_MSHR_ENTRIES_NUM_PARAM) : 1'b1)
 `define SNF_QOS_CLASS_WIDTH                    1
 `define SNF_QOS_CLASS_HIGH                     1
 `define SNF_QOS_CLASS_LOW                      0

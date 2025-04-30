@@ -83,8 +83,7 @@ module snf_txdat `SNF_PARAM
     assign txdat_crd_cnt_inc_sx    = txdatcrdv_s0;
 
     assign dat_crd_cnt_s1          = txdat_crd_cnt_q;
-    assign txdat_crd_cnt_dec_sx    = (dbf_txdat_valid_sx & txdat_crd_avail_s1 & ~txdat_dbf_won_q); //lcrd - 1
-
+    assign txdat_crd_cnt_dec_sx    = (dbf_txdat_valid_sx & txdat_crd_avail_s1);
     assign txdatflitpend = 1'b1;
     assign txdat_dbf_rdy_s1 = txdat_crd_avail_s1;
 
@@ -93,21 +92,18 @@ module snf_txdat `SNF_PARAM
         if(rst == 1'b1)begin
             txdatflit  <= {`CHIE_DAT_FLIT_WIDTH{1'b0}};
             txdatflitv <= 1'b0;
-            txdat_dbf_won_q <= 1'b0;
         end
-        else if((txdat_crd_avail_s1 == 1'b1) && (dbf_txdat_valid_sx == 1'b1) && (!txdat_dbf_won_q))begin
+        else if((txdat_crd_avail_s1 == 1'b1) && (dbf_txdat_valid_sx == 1'b1))begin
             txdatflit  <= txdat_flit;
             txdatflitv <= 1'b1;
-            txdat_dbf_won_q <= 1'b1;
         end
         else begin
             txdatflit  <= {`CHIE_DAT_FLIT_WIDTH{1'b0}};
             txdatflitv <= 1'b0;
-            txdat_dbf_won_q <= 1'b0;
         end
     end
 
-    assign txdat_dbf_won_sx        = txdat_dbf_won_q;
+    assign txdat_dbf_won_sx        = dbf_txdat_valid_sx & txdat_crd_avail_s1;
 
     //L-credit logic
     assign update_dat_crd_cnt_s0   = txdat_crd_cnt_inc_sx | txdat_crd_cnt_dec_sx;
